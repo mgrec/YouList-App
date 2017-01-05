@@ -19,6 +19,10 @@
         <input id="IDU" type="text"><br>
         <button id="connect">Connection à la playlist</button>
     </div>
+    <div class="">
+        <button id="pause">PAUSE</button>
+        <button id="play">PLAY</button>
+    </div>
 
     <div class="success" style="display: none">
         <p style="color: #4B946A">Connect with success to playList</p>
@@ -29,6 +33,10 @@
 
         </ul>
     </div>
+
+    <div style="display: none">
+        <div id="idlist">{{ idlist }}</div>
+    </div>
     </body>
     <script
             src="https://code.jquery.com/jquery-3.1.1.min.js"
@@ -37,6 +45,7 @@
     <script>
         $.support.cors = true;
         $('#connect').click(function (e) {
+            $('.success').css('display', 'block');
             $.ajax({
                 url: 'http://localhost:8000/connect-playlist',
                 type: "POST",
@@ -52,8 +61,59 @@
 
                             $('.list-result').append('<p>' + i.title + '</p>')
                         });
-
+                            $('#idlist').text(data[0].id_playlist)
                     }
+                    console.log(data[0].id_playlist);
+                }
+            });
+        });
+
+        $('#pause').click(function (e) {
+            $('.success').css('display', 'block');
+            $.ajax({
+                url: 'http://localhost:8000/change-playlist-status',
+                type: "POST",
+                dataType: 'JSON',
+                data: {
+                    'id_playlist': $('#idlist').text(),
+                    'status': 0
+                },
+                success: function (data) {
+                    if (data.status == "error") {
+                        alert('votre naviagteur ne supporte pas l\'AJAX')
+                    } else {
+                        $.each(data, function (item, i) {
+
+                            $('.list-result').append('<p>' + i.title + '</p>')
+                        });
+                        $('#idlist').text(data[0].id_playlist)
+                    }
+                    console.log(data[0].id_playlist);
+                }
+            });
+        });
+
+        $('#play').click(function (e) {
+            $('.success').css('display', 'block');
+            $.ajax({
+                url: 'http://localhost:8000/change-playlist-status',
+                type: "POST",
+                dataType: 'JSON',
+                data: {
+                    'id_playlist': $('#idlist').text(),
+                    'status': 1
+                },
+                success: function (data) {
+                    if (data.status == "error") {
+                        alert('votre naviagteur ne supporte pas l\'AJAX')
+                    } else {
+                        $.each(data, function (item, i) {
+
+                            $('.list-result').append('<p>' + i.title + '</p>')
+                        });
+                        $('#idlist').text(data[0].id_playlist)
+                    }
+                    console.log(data[0].id_playlist);
                 }
             });
         });
