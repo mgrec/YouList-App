@@ -1,34 +1,37 @@
 <!DOCTYPE html>
-
 <html>
-    <head>
-        <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:8000/connect-playlist https://code.jquery.com/jquery-3.1.1.min.js">
+<head>
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:8000/connect-playlist https://code.jquery.com/jquery-3.1.1.min.js">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport"
+          content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <link rel="stylesheet" type="text/css" href="css/reset.css">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+    <title>YouList - App</title>
+</head>
+<body>
+<header>
 
+</header>
+<div class="connect-box">
+    <p>Entrer le code de partage :</p>
+    <input placeholder="Share code" id="IDU" type="text"><br>
+    <button id="connect">Connection a la playlist</button>
+    <p class="error-connect">Can't connect to playlist</p>
+</div>
 
-        <meta name="format-detection" content="telephone=no">
-        <meta name="msapplication-tap-highlight" content="no">
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-        <link rel="stylesheet" type="text/css" href="css/index.css">
-        <title>YouList - App</title>
-    </head>
-    <body>
+<section class="playlist-content">
+    <div class="controller-playlist">
+        <p id="" class="current-title-title">En cours de lecture :</p>
+        <p id="CurrentTitle" class="current-title">Maxime</p>
 
-
-    <div class="">
-        <p>Enter le code de paratge :</p>
-        <input id="IDU" type="text"><br>
-        <button id="connect">Connection à la playlist</button>
+        <img  id="pause" src="img/pause-button.png" alt="">
+        <img id="play" src="img/play-arrow.png" alt="">
     </div>
-    <div class="">
-        <button id="pause">PAUSE</button>
-        <button id="play">PLAY</button>
-    </div>
 
-    <div class="success" style="display: none">
-        <p style="color: #4B946A">Connect with success to playList</p>
-    </div>
-
-    <div id="result">
+    <div class="list" id="result">
         <ul class="list-result">
 
         </ul>
@@ -37,86 +40,138 @@
     <div style="display: none">
         <div id="idlist">{{ idlist }}</div>
     </div>
-    </body>
-    <script
-            src="https://code.jquery.com/jquery-3.1.1.min.js"
-            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-            crossorigin="anonymous"></script>
-    <script>
-        $.support.cors = true;
-        $('#connect').click(function (e) {
-            $('.success').css('display', 'block');
-            $.ajax({
-                url: 'http://localhost:8000/connect-playlist',
-                type: "POST",
-                dataType: 'JSON',
-                data: {
-                    'IDU': $('#IDU').val()
-                },
-                success: function (data) {
-                    if (data.status == "error") {
-                        alert('votre naviagteur ne supporte pas l\'AJAX')
-                    } else {
-                        $.each(data, function (item, i) {
-
-                            $('.list-result').append('<p>' + i.title + '</p>')
-                        });
-                            $('#idlist').text(data[0].id_playlist)
-                    }
-                    console.log(data[0].id_playlist);
+</section>
+</body>
+<script
+        src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
+<script>
+    $.support.cors = true;
+    var dataConnect = 0;
+    $('#connect').click(function (e) {
+        window.localStorage.setItem("IDU", $('#IDU').val());
+        $('.success').css('display', 'block');
+        $.ajax({
+            url: 'http://localhost:8000/connect-playlist',
+            type: "POST",
+            dataType: 'JSON',
+            data: {
+                'IDU': $('#IDU').val()
+            },
+            success: function (data) {
+                if (data.status == "error") {
+                    alert('votre naviagteur ne supporte pas l\'AJAX')
+                } else {
+                    $.each(data, function (item, i) {
+                        $('.list-result').append('<p class="item-list" id="' + i.idVid + '">' + i.title + '</p>')
+                    });
+                    $('.error-connect').css('display', 'none');
+                    $('#idlist').text(data[0].id_playlist);
+                    $('.connect-box').fadeOut('slow');
+                    $('.playlist-content').fadeIn('slow');
                 }
-            });
+            }
         });
 
-        $('#pause').click(function (e) {
-            $('.success').css('display', 'block');
-            $.ajax({
-                url: 'http://localhost:8000/change-playlist-status',
-                type: "POST",
-                dataType: 'JSON',
-                data: {
-                    'id_playlist': $('#idlist').text(),
-                    'status': 0
-                },
-                success: function (data) {
-                    if (data.status == "error") {
-                        alert('votre naviagteur ne supporte pas l\'AJAX')
-                    } else {
-                        $.each(data, function (item, i) {
+        if (dataConnect == 0){
+            setTimeout(function(){
+                $('.error-connect').css('display', 'block');
+            }, 800);
+        }
+    });
 
-                            $('.list-result').append('<p>' + i.title + '</p>')
-                        });
-                        $('#idlist').text(data[0].id_playlist)
-                    }
-                    console.log(data[0].id_playlist);
+
+    $(window).scroll(function() {
+        var height = $(window).scrollTop();
+
+        if(height  >= 50) {
+            $('.controller-playlist').css('position', 'fixed');
+            $('.controller-playlist').css('margin-top', '-112px');
+        }else{
+            $('.controller-playlist').css('position', 'relative');
+            $('.controller-playlist').css('margin-top', '-20px');
+        }
+    });
+
+    setInterval(function () {
+        $.ajax({
+            url: 'http://localhost:8000/get-current-idVid',
+            type: "POST",
+            data: {
+                'IDU': window.localStorage.getItem("IDU")
+            },
+            success: function (data) {
+                if (data.status == "error") {
+                    alert('votre naviagteur ne supporte pas l\'AJAX')
+                } else {
+                    var title = $('#' + data).text();
+                    $('#' + data).text()
+                    $('.current-title').text(title);
+                    $('.item-list').css('color', 'black');
+                    $('.item-list').css('font-weight', '400');
+
+                    $('#' + data).css('color', 'red');
+                    $('#' + data).css('font-weight', 'bold');
                 }
-            });
+            }
         });
+    }, 5000);
 
-        $('#play').click(function (e) {
-            $('.success').css('display', 'block');
-            $.ajax({
-                url: 'http://localhost:8000/change-playlist-status',
-                type: "POST",
-                dataType: 'JSON',
-                data: {
-                    'id_playlist': $('#idlist').text(),
-                    'status': 1
-                },
-                success: function (data) {
-                    if (data.status == "error") {
-                        alert('votre naviagteur ne supporte pas l\'AJAX')
-                    } else {
-                        $.each(data, function (item, i) {
+    $('#pause').click(function (e) {
+        $(this).css('display', 'none');
+        $('#play').css('display', 'block');
 
-                            $('.list-result').append('<p>' + i.title + '</p>')
-                        });
-                        $('#idlist').text(data[0].id_playlist)
-                    }
-                    console.log(data[0].id_playlist);
+        $.ajax({
+            url: 'http://localhost:8000/change-playlist-status',
+            type: "POST",
+            dataType: 'JSON',
+            data: {
+                'id_playlist': $('#idlist').text(),
+                'status': 0
+            },
+            success: function (data) {
+                if (data.status == "error") {
+                    alert('votre naviagteur ne supporte pas l\'AJAX')
+                } else {
+                    /*$.each(data, function (item, i) {
+
+                        $('.list-result').append('<p>' + i.title + '</p>')
+                    });
+                    $('#idlist').text(data[0].id_playlist)*/
                 }
-            });
+                /*console.log(data[0].id_playlist);*/
+            }
         });
-    </script>
+    });
+
+    $('#play').click(function (e) {
+        $(this).css('display', 'none');
+        $('#pause').css('display', 'block');
+
+        $.ajax({
+            url: 'http://localhost:8000/change-playlist-status',
+            type: "POST",
+            dataType: 'JSON',
+            data: {
+                'id_playlist': $('#idlist').text(),
+                'status': 1
+            },
+            success: function (data) {
+                if (data.status == "error") {
+                    alert('votre naviagteur ne supporte pas l\'AJAX')
+                } else {
+                    $.each(data, function (item, i) {
+
+                       /* $('.list-result').append('<p>' + i.title + '</p>')*/
+                    });
+                        /*$('#idlist').text('');
+                        $('#idlist').text(data[0].id_playlist)*/
+                }
+                /*console.log(data[0].id_playlist)*/;
+            }
+        });
+    });
+</script>
 </html>
 
