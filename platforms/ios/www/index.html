@@ -13,7 +13,8 @@
 </head>
 <body>
 <header>
-
+    <img  id="back-disconnect" src="img/back.png" alt="">
+    <p class="deconnect-btn" id="deconnect"> Deconnexion</p>
 </header>
 <div class="connect-box">
     <p>Entrer le code de partage :</p>
@@ -25,7 +26,7 @@
 <section class="playlist-content">
     <div class="controller-playlist">
         <p id="" class="current-title-title">En cours de lecture :</p>
-        <p id="CurrentTitle" class="current-title">Maxime</p>
+        <p id="CurrentTitle" class="current-title">Data not found.</p>
 
         <img  id="pause" src="img/pause-button.png" alt="">
         <img id="play" src="img/play-arrow.png" alt="">
@@ -49,6 +50,37 @@
 <script>
     $.support.cors = true;
     var dataConnect = 0;
+
+    if (window.localStorage.getItem("IDU") != null){
+        $.ajax({
+            url: 'http://localhost:8000/connect-playlist',
+            type: "POST",
+            dataType: 'JSON',
+            data: {
+                'IDU': window.localStorage.getItem("IDU")
+            },
+            success: function (data) {
+                if (data.status == "error") {
+                    alert('votre naviagteur ne supporte pas l\'AJAX')
+                } else {
+                    $.each(data, function (item, i) {
+                        $('.list-result').append('<p class="item-list" id="' + i.idVid + '">' + i.title + '</p>')
+                    });
+                    $('.error-connect').css('display', 'none');
+                    $('#idlist').text(data[0].id_playlist);
+                    $('.connect-box').fadeOut('slow');
+                    $('.playlist-content').fadeIn('slow');
+                }
+            }
+        });
+
+        if (dataConnect == 0){
+            setTimeout(function(){
+                $('.error-connect').css('display', 'block');
+            }, 800);
+        }
+    }
+
     $('#connect').click(function (e) {
         window.localStorage.setItem("IDU", $('#IDU').val());
         $('.success').css('display', 'block');
@@ -88,9 +120,11 @@
         if(height  >= 50) {
             $('.controller-playlist').css('position', 'fixed');
             $('.controller-playlist').css('margin-top', '-112px');
+            $('.list-result').css('padding-top', '+197px');
         }else{
             $('.controller-playlist').css('position', 'relative');
             $('.controller-playlist').css('margin-top', '-20px');
+            $('.list-result').css('padding-top', '0');
         }
     });
 
@@ -117,6 +151,31 @@
             }
         });
     }, 5000);
+
+    setInterval(function () {
+        $.ajax({
+            url: 'http://localhost:8000/get-playlist-status',
+            type: "POST",
+            dataType: 'JSON',
+            data: {
+                'IDU': window.localStorage.getItem("IDU")
+            },
+            success: function (data) {
+                if (data.status == "error") {
+                    alert('votre naviagteur ne supporte pas l\'AJAX')
+                } else {
+                    if (data == 1){
+                        $('#play').css('display', 'none');
+                        $('#pause').css('display', 'block');
+                    }else if (data == 0){
+                        $('#play').css('display', 'block');
+                        $('#pause').css('display', 'none');
+                    }
+
+                }
+            }
+        });
+    }, 2500);
 
     $('#pause').click(function (e) {
         $(this).css('display', 'none');
